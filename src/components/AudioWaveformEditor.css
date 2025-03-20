@@ -1,46 +1,57 @@
-/* AudioWaveformEditor.css */
-
 .waveform-container {
+    position: relative;
     width: 100%;
-    height: 200px;
-    background: #eee;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
-.waveform-container ::part(wrapper){
-    height: 200px;
-}
-
-.waveform-container ::part(canvases){
-    height: 200px;
-}
-  
-.button {
+    margin: auto;
     padding: 10px;
-    font-size: 16px;
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-top: 10px;
-}
+  }
   
-.button:hover {
-    background: #0056b3;
-}
-  
-.progress-bar {
+  .waveform {
     width: 100%;
-    height: 10px;
+    height: 200px;
     background: #ddd;
     position: relative;
+  }
+  
+  .word-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: black;
+    transform: translateY(-50%);
+    z-index: 10; /* Ensure it's above Wavesurfer */
+    pointer-events: none; /* Prevent Wavesurfer from hijacking clicks */
+  }
+  
+  .word-point {
+    width: 12px;
+    height: 12px;
+    background: red;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 20; /* Allow interactions */
+    pointer-events: auto; /* Enable clicking & dragging */
+  }
+  
+  .word-point:active {
+    cursor: grabbing;
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 5px;
+    background: lightgray;
     margin-top: 10px;
     cursor: pointer;
-}
+    position: relative;
+  }
   
-.progress {
+  .progress {
     height: 100%;
     background: blue;
-}
+  }
+  
