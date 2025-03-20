@@ -23,7 +23,8 @@ export default function AudioWaveformEditor({ transcript, audioFile, onUpdate })
       progressColor: "blue",
       backend: "WebAudio",
       cursorWidth: 2,
-      cursorColor: "red",
+      cursorColor: "blue",
+      height: 200
     });
 
     waveSurfer.current.load(URL.createObjectURL(audioFile));
@@ -67,17 +68,17 @@ export default function AudioWaveformEditor({ transcript, audioFile, onUpdate })
       <h3>Waveform Editor</h3>
       <div ref={waveformRef} className="waveform-container" />
 
-      {/* Play / Pause Button */}
-      <button onClick={togglePlay} className="button" disabled={!isReady}>
-        {isPlaying ? "Pause" : "Play"}
-      </button>
+        {/* Scrub Bar */}
+        <div className="progress-bar" onClick={handleSeek}>
+          <div className="progress" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
+        </div>
 
-      {/* Scrub Bar */}
-      <div className="progress-bar" onClick={handleSeek}>
-        <div className="progress" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
-      </div>
+        {isReady ? <p>Audio Loaded!</p> : <p>Loading audio...</p>}
 
-      {isReady ? <p>Audio Loaded!</p> : <p>Loading audio...</p>}
+        {/* Play / Pause Button */}
+        <button onClick={togglePlay} className="button" disabled={!isReady}>
+          {isPlaying ? "Pause" : "Play"}
+        </button>
     </div>
   );
 }
