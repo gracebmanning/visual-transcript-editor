@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AudioWaveformEditor from "./AudioWaveformEditor";
 import { parseTranscript } from "./TranscriptParser";
+import "./TranscriptEditor.css"; // Import CSS file
 
 export default function TranscriptEditor() {
   const [jsonInput, setJsonInput] = useState("");
@@ -14,7 +15,7 @@ export default function TranscriptEditor() {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      
+
       reader.onprogress = (e) => {
         if (e.lengthComputable) {
           setJsonUploadProgress(Math.round((e.loaded / e.total) * 100));
@@ -24,7 +25,7 @@ export default function TranscriptEditor() {
       reader.onloadstart = () => setJsonUploadProgress(0);
       reader.onloadend = (e) => {
         setJsonInput(e.target.result);
-        setJsonUploadProgress(100); // Fully loaded
+        setJsonUploadProgress(100);
       };
 
       reader.readAsText(file);
@@ -36,7 +37,6 @@ export default function TranscriptEditor() {
     if (file) {
       setAudioUploadProgress(0);
 
-      // Simulate upload progress (real-world case: use an API or FileReader)
       let progress = 0;
       const interval = setInterval(() => {
         progress += 20;
@@ -72,32 +72,38 @@ export default function TranscriptEditor() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="container">
       <h2>Transcript Editor</h2>
 
       {/* JSON Upload */}
-      <input type="file" accept=".json" onChange={handleJsonUpload} />
-      {jsonUploadProgress > 0 && (
-        <progress value={jsonUploadProgress} max="100" style={{ display: "block", width: "100%" }} />
-      )}
+      <label htmlFor="json-upload" className="label">
+        Upload Transcript (JSON):
+      </label>
+      <input id="json-upload" type="file" accept=".json" onChange={handleJsonUpload} className="input" />
+      {jsonUploadProgress > 0 && <progress value={jsonUploadProgress} max="100" className="progress" />}
 
       {/* Audio Upload */}
-      <input type="file" accept="audio/*" onChange={handleAudioUpload} />
-      {audioUploadProgress > 0 && (
-        <progress value={audioUploadProgress} max="100" style={{ display: "block", width: "100%" }} />
-      )}
+      <label htmlFor="audio-upload" className="label">
+        Upload Audio File:
+      </label>
+      <input id="audio-upload" type="file" accept="audio/*" onChange={handleAudioUpload} className="input" />
+      {audioUploadProgress > 0 && <progress value={audioUploadProgress} max="100" className="progress" />}
 
-      <button onClick={modifyJson}>Modify JSON</button>
+      <button onClick={modifyJson} className="button">
+        Modify JSON
+      </button>
 
       {transcript && audioFile && (
         <AudioWaveformEditor transcript={transcript} audioFile={audioFile} onUpdate={handleSaveTranscript} />
       )}
 
       {modifiedTranscript && (
-        <div>
+        <div style={{ marginTop: "20px" }}>
           <h3>Modified JSON:</h3>
-          <pre>{JSON.stringify(modifiedTranscript, null, 2)}</pre>
-          <button onClick={downloadJson}>Download JSON</button>
+          <pre className="preformatted">{JSON.stringify(modifiedTranscript, null, 2)}</pre>
+          <button onClick={downloadJson} className="button">
+            Download JSON
+          </button>
         </div>
       )}
     </div>

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
+import "./AudioWaveformEditor.css"; // Import CSS file
 
 export default function AudioWaveformEditor({ transcript, audioFile, onUpdate }) {
   const waveformRef = useRef(null);
   const waveSurfer = useRef(null);
-  const [words, setWords] = useState(transcript.transcript || []);
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -13,43 +13,36 @@ export default function AudioWaveformEditor({ transcript, audioFile, onUpdate })
   useEffect(() => {
     if (!audioFile) return;
 
-    const timeout = setTimeout(() => {
-      if (waveSurfer.current) {
-        waveSurfer.current.destroy();
-      }
+    if (waveSurfer.current) {
+      waveSurfer.current.destroy();
+    }
 
-      waveSurfer.current = WaveSurfer.create({
-        container: waveformRef.current,
-        waveColor: "lightblue",
-        progressColor: "blue",
-        backend: "WebAudio",
-        cursorWidth: 2,
-        cursorColor: "red"
-      });
+    waveSurfer.current = WaveSurfer.create({
+      container: waveformRef.current,
+      waveColor: "lightblue",
+      progressColor: "blue",
+      backend: "WebAudio",
+      cursorWidth: 2,
+      cursorColor: "red",
+    });
 
-      waveSurfer.current.load(URL.createObjectURL(audioFile));
+    waveSurfer.current.load(URL.createObjectURL(audioFile));
 
-      waveSurfer.current.on("ready", () => {
-        setIsReady(true);
-        setDuration(waveSurfer.current.getDuration());
-      });
+    waveSurfer.current.on("ready", () => {
+      setIsReady(true);
+      setDuration(waveSurfer.current.getDuration());
+    });
 
-      waveSurfer.current.on("audioprocess", () => {
-        setCurrentTime(waveSurfer.current.getCurrentTime());
-      });
+    waveSurfer.current.on("audioprocess", () => {
+      setCurrentTime(waveSurfer.current.getCurrentTime());
+    });
 
-      waveSurfer.current.on("finish", () => {
-        setIsPlaying(false);
-        setCurrentTime(0);
-      });
-
-      waveSurfer.current.on("error", (error) => {
-        console.error("WaveSurfer error:", error);
-      });
-    }, 100);
+    waveSurfer.current.on("finish", () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    });
 
     return () => {
-      clearTimeout(timeout);
       if (waveSurfer.current) {
         waveSurfer.current.destroy();
         waveSurfer.current = null;
@@ -72,32 +65,16 @@ export default function AudioWaveformEditor({ transcript, audioFile, onUpdate })
   return (
     <div>
       <h3>Waveform Editor</h3>
-      <div ref={waveformRef} style={{ width: "100%", height: "200px", background: "#eee" }} />
+      <div ref={waveformRef} className="waveform-container" />
 
       {/* Play / Pause Button */}
-      <button onClick={togglePlay} disabled={!isReady}>
+      <button onClick={togglePlay} className="button" disabled={!isReady}>
         {isPlaying ? "Pause" : "Play"}
       </button>
 
       {/* Scrub Bar */}
-      <div
-        style={{
-          width: "100%",
-          height: "10px",
-          background: "#ddd",
-          position: "relative",
-          marginTop: "10px",
-          cursor: "pointer"
-        }}
-        onClick={handleSeek}
-      >
-        <div
-          style={{
-            width: `${(currentTime / duration) * 100}%`,
-            height: "100%",
-            background: "blue"
-          }}
-        ></div>
+      <div className="progress-bar" onClick={handleSeek}>
+        <div className="progress" style={{ width: `${(currentTime / duration) * 100}%` }}></div>
       </div>
 
       {isReady ? <p>Audio Loaded!</p> : <p>Loading audio...</p>}
