@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { FileContext } from '../contexts/fileContext';
+import { useNavigate } from 'react-router';
 
-const UploadAudio = ({ history }) => {
+const UploadAudio = () => {
 	const inputFile = useRef(null);
 	const { setFileURL } = useContext(FileContext);
 	const [file, setFile] = useState(null);
+    const navigate = useNavigate();
 
 	useEffect(() => {
 		if (file) {
 			setFileURL(file);
-			history.push('/edit');
+			navigate('/edit');
 		}
-	}, [file, setFileURL, history]);
+	}, [file, setFileURL, navigate]);
 
 	const handleButtonClick = () => {
 		inputFile.current.click();
