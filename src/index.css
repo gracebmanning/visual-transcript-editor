@@ -237,9 +237,10 @@ input:checked+.toggle .off {
 /* footer style */
 footer {
   font-family: inherit;
+  width: 100%;
   position: fixed;
   bottom: 2%;
-  right: 2%;
+  text-align: center;
 }
 
 @media screen and (max-width: 430px) {

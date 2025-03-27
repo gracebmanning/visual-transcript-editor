@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js';
-import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.js';
+import WaveSurfer from 'wavesurfer.js';
+import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 import { FileContext } from '../contexts/fileContext';
-import wavesurfer from 'wavesurfer.js';
 import ToggleButton from './ToggleButton';
 
 const AudioWaveform = () => {
@@ -12,7 +12,6 @@ const AudioWaveform = () => {
 	// fetch file url from the context
 	const { fileURL } = useContext(FileContext);
     
-
 	// crate an instance of the wavesurfer
 	const [wavesurferObj, setWavesurferObj] = useState();
 
@@ -21,11 +20,15 @@ const AudioWaveform = () => {
 	const [zoom, setZoom] = useState(1); // to control the zoom level of the waveform
 	const [duration, setDuration] = useState(0); // duration is used to set the default region of selection for trimming the audio
 
+	// initialize plugins
+	const regionsPlugin = RegionsPlugin.create();
+
+
 	// create the waveform inside the correct component
 	useEffect(() => {
 		if (wavesurferRef.current && !wavesurferObj) {
 			setWavesurferObj(
-				wavesurfer.create({
+				WaveSurfer.create({
 					container: '#waveform',
 					scrollParent: true,
 					autoCenter: true,
@@ -38,12 +41,12 @@ const AudioWaveform = () => {
 						TimelinePlugin.create({
 							container: '#wave-timeline',
 						}),
-						RegionsPlugin.create({}),
+						regionsPlugin,
 					],
 				})
 			);
 		}
-	}, [wavesurferRef, wavesurferObj]);
+	}, [wavesurferRef, wavesurferObj, regionsPlugin]);
 
 	// once the file URL is ready, load the file to produce the waveform
 	useEffect(() => {
@@ -54,24 +57,32 @@ const AudioWaveform = () => {
 
 	useEffect(() => {
 		if (wavesurferObj) {
-			// once the waveform is ready, play the audio
 			wavesurferObj.on('ready', () => {
 				wavesurferObj.play();
-				wavesurferObj.enableDragSelection({}); // to select the region to be trimmed
-				setDuration(Math.floor(wavesurferObj.getDuration())); // set the duration in local state
+				regionsPlugin.enableDragSelection({});
+				setDuration(Math.floor(wavesurferObj.getDuration()));
+	
+				console.log("wavesurferObj in ready:", wavesurferObj);
+				console.log("regionsPlugin in ready:", regionsPlugin);
+				console.log("wavesurferObj.isReady in ready:", wavesurferObj.isReady);
+	
+				setTimeout(() => {
+					regionsPlugin.addRegion({
+						start: Math.floor(wavesurferObj.getDuration() / 2) - Math.floor(wavesurferObj.getDuration()) / 5,
+						end: Math.floor(wavesurferObj.getDuration() / 2),
+						color: 'hsla(265, 100%, 86%, 0.4)',
+					});
+				}, 50); // Increased delay to 50 milliseconds
 			});
-
-			// once audio starts playing, set the state variable to true
+	
 			wavesurferObj.on('play', () => {
 				setPlaying(true);
 			});
-
-			// once audio starts playing, set the state variable to false
+	
 			wavesurferObj.on('finish', () => {
 				setPlaying(false);
 			});
-
-			// if multiple regions are created, then remove all the previous regions so that only 1 is present at any given time
+	
 			wavesurferObj.on('region-updated', (region) => {
 				const regions = region.wavesurfer.regions.list;
 				const keys = Object.keys(regions);
@@ -80,7 +91,7 @@ const AudioWaveform = () => {
 				}
 			});
 		}
-	}, [wavesurferObj]);
+	}, [wavesurferObj, regionsPlugin]);
 
 	// set volume of the wavesurfer object, whenever volume variable in state is changed
 	useEffect(() => {
@@ -89,20 +100,10 @@ const AudioWaveform = () => {
 
 	// set zoom level of the wavesurfer object, whenever the zoom variable in state is changed
 	useEffect(() => {
-		if (wavesurferObj) wavesurferObj.zoom(zoom);
-	}, [zoom, wavesurferObj]);
-
-	// when the duration of the audio is available, set the length of the region depending on it, so as to not exceed the total lenght of the audio
-	useEffect(() => {
-		if (duration && wavesurferObj) {
-			// add a region with default length
-			wavesurferObj.addRegion({
-				start: Math.floor(duration / 2) - Math.floor(duration) / 5, // time in seconds
-				end: Math.floor(duration / 2), // time in seconds
-				color: 'hsla(265, 100%, 86%, 0.4)', // color of the selected region, light hue of purple
-			});
-		}
-	}, [duration, wavesurferObj]);
+        if (wavesurferObj && wavesurferObj.backend && wavesurferObj.backend.isReady) {
+            wavesurferObj.zoom(zoom);
+        }
+    }, [zoom, wavesurferObj]);
 
 	const handlePlayPause = (e) => {
 		wavesurferObj.playPause();
@@ -243,7 +244,7 @@ const AudioWaveform = () => {
 							max='1000'
 							value={zoom}
 							onChange={handleZoomSlider}
-							class='slider zoom-slider'
+							className='slider zoom-slider'
 						/>
 						<i className='material-icons zoom-icon'>add_circle</i>
 					</div>

@@ -1,11 +1,11 @@
 const ToggleButton = () => {
 	return (
 		<>
-			<label class='switch'>
+			<label className='switch'>
 				<input type='checkbox' id='togBtn' />
-				<div class='toggle round'>
-					<span class='on'>Customer</span>
-					<span class='off'>Agent</span>
+				<div className='toggle round'>
+					<span className='on'>Customer</span>
+					<span className='off'>Agent</span>
 				</div>
 			</label>
 		</>
