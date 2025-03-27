@@ -24,7 +24,7 @@ body {
 /* the container where wavesurfer adds the audio waveform */
 .waveform-container {
   margin: 0 auto;
-  max-width: 80vw;
+  max-width: 90vw;
 }
 
 /* style for the navbar */
