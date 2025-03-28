@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-// import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'; // Comment out
-// import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'; // Consider commenting out
 import { FileContext } from '../contexts/fileContext';
 import ToggleButton from './ToggleButton';
 
@@ -15,11 +13,9 @@ const AudioWaveform = () => {
     const [wavesurferObj, setWavesurferObj] = useState();
     const [playing, setPlaying] = useState(true);
     const [volume, setVolume] = useState(1);
-    const [zoom, setZoom] = useState(1);
+    const [zoom, setZoom] = useState(100); // Initialize with 100
     const [duration, setDuration] = useState(0);
     const [waveformData, setWaveformData] = useState([]);
-
-    // const regionsPlugin = RegionsPlugin.create(); // Comment out
 
 	useEffect(() => {
         const canvas = canvasRef.current;
@@ -43,12 +39,7 @@ const AudioWaveform = () => {
                     waveColor: '#211027',
                     progressColor: '#69207F',
                     responsive: true,
-                    plugins: [
-                        // TimelinePlugin.create({ // Consider commenting out
-                        //     container: '#wave-timeline',
-                        // }),
-                        // regionsPlugin, // Remove
-                    ],
+                    plugins: [],
                 })
             );
         }
@@ -62,55 +53,46 @@ const AudioWaveform = () => {
     }, [fileURL, wavesurferObj]);
 
 	useEffect(() => {
+        if (wavesurferObj && wavesurferObj.decodedData) {
+            const audioBuffer = wavesurferObj.decodedData;
+            const channelData = audioBuffer.getChannelData(0);
+            const canvasWidth = canvasRef.current ? canvasRef.current.width : 0;
+            const zoomLevel = zoom / 100; // Normalize zoom (e.g., 1 is fully zoomed out, higher values zoom in)
+            const numPeaks = Math.max(100, Math.floor(canvasWidth * zoomLevel * 5)); // Adjust multiplier as needed
+            const step = Math.floor(channelData.length / numPeaks);
+            const peaks = [];
+    
+            for (let i = 0; i < channelData.length; i += step) {
+                let max = 0;
+                for (let j = 0; j < step && i + j < channelData.length; j++) {
+                    max = Math.max(max, Math.abs(channelData[i + j]));
+                }
+                peaks.push(max);
+            }
+    
+            setWaveformData(peaks);
+            console.log("Waveform Peaks (zoom changed):", peaks.length, zoomLevel, step);
+        }
+    }, [wavesurferObj, zoom]);
+    
+    useEffect(() => {
         if (wavesurferObj) {
             wavesurferObj.on('ready', () => {
                 wavesurferObj.play();
                 setDuration(Math.floor(wavesurferObj.getDuration()));
     
-                const audioBuffer = wavesurferObj.decodedData;
-                if (audioBuffer) {
-                    const channelData = audioBuffer.getChannelData(0);
-                    const canvasWidth = canvasRef.current ? canvasRef.current.width : 0;
-                    const zoomFactor = zoom / 100; // Normalize zoom value (assuming zoom is from 1 to 1000)
-                    const adjustedDataLength = Math.floor(channelData.length / zoomFactor);
-                    const samplesPerPixel = Math.max(1, Math.floor(adjustedDataLength / canvasWidth)); // Ensure at least 1 sample per pixel
-                    const peaks = [];
-    
-                    for (let i = 0; i < canvasWidth; i++) {
-                        let max = 0;
-                        for (let j = 0; j < samplesPerPixel; j++) {
-                            const index = Math.floor(i * samplesPerPixel * zoomFactor); // Adjust index for zoom
-                            if (index + j < channelData.length) {
-                                max = Math.max(max, Math.abs(channelData[index + j]));
-                            }
-                        }
-                        peaks.push(max);
-                    }
-    
-                    setWaveformData(peaks);
-                    console.log("Waveform Peaks (with zoom):", peaks.length, zoom);
-                } else {
-                    console.log("decodedData is not available.");
-                }
+                // The waveform data should now be fetched in the other useEffect
             });
-
+    
             wavesurferObj.on('play', () => {
                 setPlaying(true);
             });
-
+    
             wavesurferObj.on('finish', () => {
                 setPlaying(false);
             });
-
-            // wavesurferObj.on('region-updated', (region) => { // Comment out
-            //     const regions = region.wavesurfer.regions.list;
-            //     const keys = Object.keys(regions);
-            //     if (keys.length > 1) {
-            //         regions[keys[0]].remove();
-            //     }
-            // });
         }
-    }, [wavesurferObj, zoom]);
+    }, [wavesurferObj]);
 
 	useEffect(() => {
         if (canvasContext && waveformData.length > 0) {
@@ -165,9 +147,8 @@ const AudioWaveform = () => {
 
 	const handleZoomSlider = (e) => {
 		setZoom(e.target.value);
+        console.log("Zoom Value:", e.target.value); // ADD THIS LINE
 	};
-
-	//<div ref={timelineRef} id='wave-timeline' style={{ display: 'none' }} />
 
 	return (
 		<section className='waveform-container'>
@@ -182,9 +163,6 @@ const AudioWaveform = () => {
                     <button title='reload' className='controls' onClick={handleReload}>
                         <i className='material-icons'>replay</i>
                     </button>
-                    {/* <button className='trim' onClick={handleTrim}> // Remove or comment out */}
-                    {/* <i style={{ fontSize: '1.2em', color: 'white' }} className='material-icons'>content_cut</i> Trim */}
-                    {/* </button> */}
                 </div>
                 <div className='right-container'>
                     <div className='volume-slide-container'>
