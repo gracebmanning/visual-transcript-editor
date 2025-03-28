@@ -8,7 +8,7 @@ body {
 }
 
 /* style for the upload audio component */
-.upload-audio {
+.file-upload {
   width: 100%;
   margin-top: 5vh;
   display: flex;
@@ -17,7 +17,7 @@ body {
   justify-content: space-between;
 }
 
-.upload-audio i.audio-icon {
+.file-upload i.audio-icon {
   font-size: 5em;
 }
 
@@ -248,7 +248,7 @@ footer {
     font-size: 1em;
   }
 
-  .upload-audio i.audio-icon {
+  .file-upload i.audio-icon {
     font-size: 4em;
   }
 

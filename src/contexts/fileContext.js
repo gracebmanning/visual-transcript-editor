@@ -3,9 +3,9 @@ import { createContext, useState } from 'react';
 const FileContext = createContext();
 
 const FileContextProvider = ({ children }) => {
-	const [fileURL, setFileURL] = useState('');
+	const [audioFileURL, setAudioFileURL] = useState('');
 	return (
-		<FileContext.Provider value={{ fileURL, setFileURL }}>
+		<FileContext.Provider value={{ audioFileURL, setAudioFileURL }}>
 			{children}
 		</FileContext.Provider>
 	);

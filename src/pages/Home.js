@@ -1,9 +1,9 @@
-import UploadAudio from '../components/UploadAudio';
+import FileUpload from "../components/FileUpload";
 
 const Home = ({ history }) => {
   return (
     <div>
-        <UploadAudio history={history} />
+        <FileUpload history={history} />
     </div>
   )
 }
