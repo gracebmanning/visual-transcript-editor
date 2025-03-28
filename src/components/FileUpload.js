@@ -1,35 +1,35 @@
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useRef, useContext } from 'react';
 import { FileContext } from '../contexts/fileContext';
 import { useNavigate } from 'react-router';
 
 const FileUpload = () => {
-	const navigate = useNavigate();
+    const navigate = useNavigate();
 
     // Audio-related variables
     const audioInputFile = useRef(null);
     const { setAudioFileURL } = useContext(FileContext);
     const [audioData, setAudioData] = useState(null);
+    const [isAudioUploaded, setIsAudioUploaded] = useState(false);
 
     // Transcript-related variables
-    const transcriptInputFile = useRef(null); // New ref for transcript input
+    const transcriptInputFile = useRef(null);
     const [transcriptData, setTranscriptData] = useState(null);
     const [transcriptError, setTranscriptError] = useState('');
-   
+    const [isTranscriptUploaded, setIsTranscriptUploaded] = useState(false); // New state
 
-	useEffect(() => {
-        if (audioData) {
-            setAudioFileURL(audioData);
-            navigate('/edit', { state: { transcriptData } }); // Keep passing transcriptData
-        }
-    }, [audioData, setAudioFileURL, navigate, transcriptData]);
-
-	// Handle audio file upload
+    // Handle audio file upload
     const handleAudioButtonClick = () => {
         audioInputFile.current.click();
     };
 
     const handleAudioFileUpload = (e) => {
-        setAudioData(URL.createObjectURL(e.target.files[0]));
+        const file = e.target.files[0];
+        if (file) {
+            setAudioData(URL.createObjectURL(file));
+            setIsAudioUploaded(true);
+        } else {
+            setIsAudioUploaded(false);
+        }
     };
 
     // Handle transcript file upload
@@ -37,22 +37,32 @@ const FileUpload = () => {
         transcriptInputFile.current.click();
     };
 
-	const handleTranscriptFileUpload = (event) => {
+    const handleTranscriptFileUpload = (event) => {
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file) {
+            setIsTranscriptUploaded(false);
+            return;
+        }
         setTranscriptError('');
         const allowedTypes = ['application/json', 'text/plain'];
         if (!allowedTypes.includes(file.type)) {
             setTranscriptError('Error: Only .json and .txt files are allowed.');
+            setIsTranscriptUploaded(false);
             return;
         }
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
-            processTranscriptContent(content, file.type);
+            const processed = processTranscriptContent(content, file.type);
+            if (processed) {
+                setIsTranscriptUploaded(true);
+            } else {
+                setIsTranscriptUploaded(false);
+            }
         };
         reader.onerror = () => {
             setTranscriptError('Error: Failed to read the uploaded transcript file.');
+            setIsTranscriptUploaded(false);
         };
         reader.readAsText(file);
     };
@@ -63,8 +73,10 @@ const FileUpload = () => {
                 const parsedData = JSON.parse(content);
                 if (Array.isArray(parsedData) && parsedData.every(item => item.hasOwnProperty('word') && item.hasOwnProperty('start') && item.hasOwnProperty('end'))) {
                     setTranscriptData(parsedData);
+                    return true;
                 } else {
                     setTranscriptError('Error: JSON file should contain an array of transcript objects with "word", "start", and "end" keys.');
+                    return false;
                 }
             } else if (fileType === 'text/plain') {
                 const lines = content.trim().split('\n');
@@ -78,15 +90,27 @@ const FileUpload = () => {
                 if (processedData.length === 0 && lines.length > 0) {
                     setTranscriptError('Warning: Text file format might be incorrect. Ensure each line contains "word start end".');
                 }
+                return processedData.length > 0;
             }
         } catch (error) {
             console.error("Error parsing transcript:", error);
             setTranscriptError('Error: Could not parse the transcript file. Please check the format.');
+            return false;
         }
+        return false;
     };
 
-	return (
-		<div className='file-upload'> {/* Renamed class for consistency */}
+    const handleEditButtonClick = () => {
+        if (!audioData || !transcriptData) {
+            alert('Please upload both an audio file and a transcript file.'); // Improved error message
+            return;
+        }
+        setAudioFileURL(audioData);
+        navigate('/edit', { state: { transcriptData } });
+    };
+
+    return (
+        <div className='file-upload'>
             <i
                 style={{ color: '#531A65' }}
                 className='material-icons audio-icon'>
@@ -104,22 +128,33 @@ const FileUpload = () => {
                 accept='audio/*'
                 onChange={handleAudioFileUpload}
             />
-
-			<h1>Upload your transcript file here</h1>
+			<br/>
+            <h1>Upload your transcript file here</h1>
             <button className='upload-btn' onClick={handleTranscriptButtonClick}>
                 Upload Transcript
             </button>
             <input
                 type="file"
-				id="transcriptFile"
+                id="transcriptFile"
                 accept=".json,.txt"
                 ref={transcriptInputFile}
                 style={{ display: 'none' }}
-				onChange={handleTranscriptFileUpload}
+                onChange={handleTranscriptFileUpload}
             />
+			<br/>
+			<hr style={{ width: "50%", height: 2, color: "var(--color-primary)", backgroundColor: "var(--color-primary)" }} />
             {transcriptError && <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>}
+
+            {isAudioUploaded && isTranscriptUploaded && ( // Updated condition
+                <button className='upload-btn' style={{ marginTop: '20px' }} onClick={handleEditButtonClick}>
+                    Edit
+                </button>
+            )}
+            {!isTranscriptUploaded && transcriptError && (
+                <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>
+            )}
         </div>
-	);
+    );
 };
 
 export default FileUpload;

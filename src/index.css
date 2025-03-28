@@ -1,3 +1,7 @@
+:root{
+  --color-primary: #5B266B;
+}
+
 body {
   margin: 0;
   font-family: 'Ubuntu', sans-serif;
