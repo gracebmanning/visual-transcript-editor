@@ -46,12 +46,6 @@ nav {
   font-weight: bold;
 }
 
-nav>.brand {
-  display: flex;
-  color: white;
-  align-items: center;
-}
-
 nav a {
   text-decoration: none;
   color: inherit;
@@ -248,6 +242,14 @@ footer {
   position: fixed;
   bottom: 2%;
   text-align: center;
+}
+
+footer a{
+  color: var(--color-primary);
+}
+
+footer a:hover{
+  color: var(--color-dark);
 }
 
 @media screen and (max-width: 430px) {
