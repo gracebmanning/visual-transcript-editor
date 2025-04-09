@@ -11,7 +11,6 @@ const AudioWaveform = (props) => {
     const [waveformData, setWaveformData] = useState([]);
     const [duration, setDuration] = useState(0);
     const [isWaveSurferReady, setIsWaveSurferReady] = useState(false);
-    //const { fileURL } = useContext(FileContext);
 
     useEffect(() => {
         console.log('First useEffect triggered, fileURL:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady); // Log effect trigger and fileURL
@@ -32,15 +31,22 @@ const AudioWaveform = (props) => {
         wavesurfer.current.load(props.audioData);
 
         wavesurfer.current.on('ready', () => {
+            console.log('wavesurfer.current in ready event:', wavesurfer.current);
             setDuration(Math.floor(wavesurfer.current.getDuration()));
-            const rawWaveformData = wavesurfer.current.exportPCM(1024); // Export waveform data
-            setWaveformData(rawWaveformData);
-            setIsWaveSurferReady(true);
         });
 
-        // TODO: what is this
+        // actions that need to happen after the waveform is visually ready
         wavesurfer.current.on('waveform-ready', () => {
-            // You can add any actions that need to happen after the waveform is visually ready here
+            console.log('wavesurfer.current in waveform-ready event:', wavesurfer.current);
+            if (wavesurfer.current) {
+                try {
+                    const rawWaveformData = wavesurfer.current.exportPCM(1024); // Export waveform data
+                    setWaveformData(rawWaveformData);
+                    setIsWaveSurferReady(true);
+                } catch (error) {
+                    console.error("Error exporting PCM in waveform-ready:", error);
+                }
+            }
         });
 
         return () => {
@@ -53,7 +59,7 @@ const AudioWaveform = (props) => {
             }
             setIsWaveSurferReady(false);
         };
-    }, [props.audioData, isWaveSurferReady]);
+    }, [props.audioData, isWaveSurferReady]); 
 
     useEffect(() => {
         console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData); // Log second effect trigger
