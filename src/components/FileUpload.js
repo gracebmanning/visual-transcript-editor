@@ -120,7 +120,7 @@ const FileUpload = () => {
     return (
         <div className='file-upload'>
             <i
-                style={{ color: '#531A65' }}
+                style={{ color: 'var(--color-medium)' }}
                 className='material-icons audio-icon'>
                 library_music
             </i>
@@ -137,7 +137,7 @@ const FileUpload = () => {
                 onChange={handleAudioFileUpload}
             />
             {isAudioLoading && <p>Loading audio...</p>}
-            {isAudioUploaded && !isAudioLoading && <p style={{ color: 'green' }}>Audio Uploaded!</p>}
+            {isAudioUploaded && !isAudioLoading && <p style={{ color: 'var(--color-primary)' }}>Audio Uploaded!</p>}
 			<br/>
             <h1>Upload your transcript file here</h1>
             <button className='upload-btn' onClick={handleTranscriptButtonClick}>

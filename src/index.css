@@ -1,8 +1,8 @@
 :root{
-  --color-light: rgba(213, 184, 255, 0.7);
-  --color-medium: rebeccapurple;
-  --color-primary: #5B266B;
-  --color-dark: #1D0B22;
+  --color-light: #b5e372;
+  --color-medium: #7A9F43;
+  --color-primary: #3E5A14;
+  --color-dark: #2a3e0d;
 }
 
 body {
@@ -194,7 +194,7 @@ i.zoom-icon {
   top: -10%;
   height: 1.30em;
   width: 1.30em;
-  background-color: #923CAC;
+  background-color: var(--color-primary);
   border: 0.05em solid var(--color-medium);
   -webkit-transition: .2s;
   transition: .2s;

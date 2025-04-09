@@ -19,9 +19,9 @@ const AudioWaveform = (props) => {
 
         wavesurfer.current = WaveSurfer.create({
             container: waveformRef.current,
-            waveColor: '#69207F',
-            progressColor: '#A4508B',
-            cursorColor: '#333',
+            waveColor: window.getComputedStyle(document.body).getPropertyValue('--color-primary'),
+            progressColor: window.getComputedStyle(document.body).getPropertyValue('--color-medium'),
+            cursorColor: 'black',
             barWidth: 2,
             height: 80,
             responsive: true,
