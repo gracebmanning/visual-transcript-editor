@@ -23,7 +23,12 @@ const Editor = () => {
 			<h1 style={{ textAlign: 'center'}}>
 				Edit Your Audio File
 			</h1>
-			{isAudioURLAvailable && <AudioWaveform audioData={audioDataFromUpload} transcriptData={transcriptDataFromUpload} />}
+			{isAudioURLAvailable && (
+				<AudioWaveform 
+					key={audioDataFromUpload}
+					audioData={audioDataFromUpload} 
+					transcriptData={transcriptDataFromUpload} />
+			)}
 			{!isAudioURLAvailable && <p style={{ textAlign: 'center' }}>Loading audio...</p>}
 		</div>
 	);
