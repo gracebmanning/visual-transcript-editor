@@ -7,7 +7,7 @@ const FileUpload = () => {
     // Audio-related variables
     const audioInputFile = useRef(null);
     const [audioData, setAudioData] = useState(null);
-    //const [audioError, setAudioError] = useState(''); --- TODO: optional - implement later
+    const [audioError, setAudioError] = useState('');
     const [isAudioUploaded, setIsAudioUploaded] = useState(false);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
@@ -26,13 +26,51 @@ const FileUpload = () => {
     const handleAudioFileUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
+            const maxFileSizeMB = 50;
+            const allowedAudioTypes = [
+                'audio/mpeg', // MP3
+                'audio/wav',  // WAV
+                'audio/ogg',  // OGG
+                'audio/webm', // WebM
+                'audio/aac',  // AAC
+                'audio/mp4',  // MP4 (for audio)
+                'audio/x-wav'   // Some WAV variations
+            ];
+            
+            if (file.size > maxFileSizeMB * 1024 * 1024) {
+                setAudioError(`Error: Audio file size exceeds the limit of ${maxFileSizeMB}MB.`);
+                setAudioData(null);
+                setIsAudioUploaded(false);
+                setIsAudioLoading(false);
+                return;
+            }
+
+            if (!allowedAudioTypes.includes(file.type)) {
+                setAudioError(`Error: Unsupported audio file type. Allowed types are: ${allowedAudioTypes.join(', ')}.`);
+                setAudioData(null);
+                setIsAudioUploaded(false);
+                setIsAudioLoading(false);
+                return;
+            }
+            
             setIsAudioLoading(true);
-            setAudioData(URL.createObjectURL(file));
-            setIsAudioUploaded(true);
-            setIsAudioLoading(false);
+            setAudioError('');
+            try {
+                setAudioData(URL.createObjectURL(file));
+                setIsAudioUploaded(true);
+            } catch (error) {
+                console.error("Error creating audio URL:", error);
+                setAudioError('Error: Could not read the audio file.');
+                setAudioData(null);
+                setIsAudioUploaded(false);
+            } finally {
+                setIsAudioLoading(false);
+            }
         } else {
             setIsAudioUploaded(false);
             setIsAudioLoading(false);
+            setAudioError(''); // Clear error if no file is selected
+            setAudioData(null);
         }
     };
 
@@ -138,7 +176,8 @@ const FileUpload = () => {
             />
             {isAudioLoading && <p>Loading audio...</p>}
             {isAudioUploaded && !isAudioLoading && <p style={{ color: 'var(--color-primary)' }}>Audio Uploaded!</p>}
-			<br/>
+			{audioError && <p className="error-message" style={{ color: 'red' }}>{audioError}</p>}
+            <br/>
             <h1>Upload your transcript file here</h1>
             <button className='upload-btn' onClick={handleTranscriptButtonClick}>
                 Upload Transcript
@@ -152,11 +191,10 @@ const FileUpload = () => {
                 onChange={handleTranscriptFileUpload}
             />
             {isTranscriptLoading && <p>Loading transcript...</p>}
-            {isTranscriptUploaded && !isTranscriptLoading && <p style={{ color: 'green' }}>Transcript Uploaded!</p>}
-			<br/>
+            {isTranscriptUploaded && !isTranscriptLoading && <p style={{ color: 'var(--color-primary)' }}>Transcript Uploaded!</p>}
+			{transcriptError && <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>}
+            <br/>
 			<hr style={{ width: "50%", height: 2, color: "var(--color-primary)", backgroundColor: "var(--color-primary)" }} />
-            {transcriptError && <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>}
-
             {isAudioUploaded && isTranscriptUploaded && (
                 <button className='upload-btn' style={{ marginTop: '20px' }} onClick={handleEditButtonClick}>
                     Edit
