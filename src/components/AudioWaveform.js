@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import { FileContext } from '../contexts/fileContext';
 
 const AudioWaveform = (props) => {
+    console.log('AudioWaveform component rendered');
+
     const waveformRef = useRef(null);
     const wavesurfer = useRef(null);
     const canvasRef = useRef(null);
     const canvasContext = useRef(null);
     const [waveformData, setWaveformData] = useState([]);
     const [duration, setDuration] = useState(0);
-    const { fileURL } = useContext(FileContext);
+    const [isWaveSurferReady, setIsWaveSurferReady] = useState(false);
+    //const { fileURL } = useContext(FileContext);
 
     useEffect(() => {
+        console.log('First useEffect triggered, fileURL:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady); // Log effect trigger and fileURL
         if (!waveformRef.current) return;
 
         wavesurfer.current = WaveSurfer.create({
@@ -26,26 +29,34 @@ const AudioWaveform = (props) => {
             plugins: []
         });
 
-        wavesurfer.current.load(fileURL);
+        wavesurfer.current.load(props.audioData);
 
         wavesurfer.current.on('ready', () => {
             setDuration(Math.floor(wavesurfer.current.getDuration()));
             const rawWaveformData = wavesurfer.current.exportPCM(1024); // Export waveform data
             setWaveformData(rawWaveformData);
+            setIsWaveSurferReady(true);
         });
 
+        // TODO: what is this
         wavesurfer.current.on('waveform-ready', () => {
             // You can add any actions that need to happen after the waveform is visually ready here
         });
 
         return () => {
-            if (wavesurfer.current) {
+            console.log('First useEffect cleanup, isWaveSurferReady:', isWaveSurferReady); // Log cleanup
+            if (wavesurfer.current && isWaveSurferReady) {
                 wavesurfer.current.destroy();
+            } else if (wavesurfer.current) {
+                wavesurfer.current.stop();
+                wavesurfer.current.un('ready');
             }
+            setIsWaveSurferReady(false);
         };
-    }, [fileURL]);
+    }, [props.audioData, isWaveSurferReady]);
 
     useEffect(() => {
+        console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData); // Log second effect trigger
         const canvas = canvasRef.current;
         if (!canvas) return;
 

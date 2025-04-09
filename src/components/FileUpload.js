@@ -1,5 +1,4 @@
-import { useState, useRef, useContext } from 'react';
-import { FileContext } from '../contexts/fileContext';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 
 const FileUpload = () => {
@@ -7,8 +6,8 @@ const FileUpload = () => {
 
     // Audio-related variables
     const audioInputFile = useRef(null);
-    const { setAudioFileURL } = useContext(FileContext);
     const [audioData, setAudioData] = useState(null);
+    //const [audioError, setAudioError] = useState(''); --- TODO: optional - implement later
     const [isAudioUploaded, setIsAudioUploaded] = useState(false);
     const [isAudioLoading, setIsAudioLoading] = useState(false);
 
@@ -112,11 +111,10 @@ const FileUpload = () => {
 
     const handleEditButtonClick = () => {
         if (!audioData || !transcriptData) {
-            alert('Please upload both an audio file and a transcript file.'); // Improved error message
+            alert('Please upload both an audio file and a transcript file.');
             return;
         }
-        setAudioFileURL(audioData);
-        navigate('/edit', { state: { transcriptData } });
+        navigate('/edit', { state: { audioData, transcriptData } });
     };
 
     return (
