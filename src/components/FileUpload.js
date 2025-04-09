@@ -10,12 +10,14 @@ const FileUpload = () => {
     const { setAudioFileURL } = useContext(FileContext);
     const [audioData, setAudioData] = useState(null);
     const [isAudioUploaded, setIsAudioUploaded] = useState(false);
+    const [isAudioLoading, setIsAudioLoading] = useState(false);
 
     // Transcript-related variables
     const transcriptInputFile = useRef(null);
     const [transcriptData, setTranscriptData] = useState(null);
     const [transcriptError, setTranscriptError] = useState('');
-    const [isTranscriptUploaded, setIsTranscriptUploaded] = useState(false); // New state
+    const [isTranscriptUploaded, setIsTranscriptUploaded] = useState(false);
+    const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
 
     // Handle audio file upload
     const handleAudioButtonClick = () => {
@@ -25,10 +27,13 @@ const FileUpload = () => {
     const handleAudioFileUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setIsAudioLoading(true);
             setAudioData(URL.createObjectURL(file));
             setIsAudioUploaded(true);
+            setIsAudioLoading(false);
         } else {
             setIsAudioUploaded(false);
+            setIsAudioLoading(false);
         }
     };
 
@@ -41,13 +46,16 @@ const FileUpload = () => {
         const file = event.target.files[0];
         if (!file) {
             setIsTranscriptUploaded(false);
+            setIsTranscriptLoading(false);
             return;
         }
+        setIsTranscriptLoading(true);
         setTranscriptError('');
         const allowedTypes = ['application/json', 'text/plain'];
         if (!allowedTypes.includes(file.type)) {
             setTranscriptError('Error: Only .json and .txt files are allowed.');
             setIsTranscriptUploaded(false);
+            setIsTranscriptLoading(false);
             return;
         }
         const reader = new FileReader();
@@ -59,10 +67,12 @@ const FileUpload = () => {
             } else {
                 setIsTranscriptUploaded(false);
             }
+            setIsTranscriptLoading(false);
         };
         reader.onerror = () => {
             setTranscriptError('Error: Failed to read the uploaded transcript file.');
             setIsTranscriptUploaded(false);
+            setIsTranscriptLoading(false);
         };
         reader.readAsText(file);
     };
@@ -128,6 +138,8 @@ const FileUpload = () => {
                 accept='audio/*'
                 onChange={handleAudioFileUpload}
             />
+            {isAudioLoading && <p>Loading audio...</p>}
+            {isAudioUploaded && !isAudioLoading && <p style={{ color: 'green' }}>Audio Uploaded!</p>}
 			<br/>
             <h1>Upload your transcript file here</h1>
             <button className='upload-btn' onClick={handleTranscriptButtonClick}>
@@ -141,17 +153,16 @@ const FileUpload = () => {
                 style={{ display: 'none' }}
                 onChange={handleTranscriptFileUpload}
             />
+            {isTranscriptLoading && <p>Loading transcript...</p>}
+            {isTranscriptUploaded && !isTranscriptLoading && <p style={{ color: 'green' }}>Transcript Uploaded!</p>}
 			<br/>
 			<hr style={{ width: "50%", height: 2, color: "var(--color-primary)", backgroundColor: "var(--color-primary)" }} />
             {transcriptError && <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>}
 
-            {isAudioUploaded && isTranscriptUploaded && ( // Updated condition
+            {isAudioUploaded && isTranscriptUploaded && (
                 <button className='upload-btn' style={{ marginTop: '20px' }} onClick={handleEditButtonClick}>
                     Edit
                 </button>
-            )}
-            {!isTranscriptUploaded && transcriptError && (
-                <p className="error-message" style={{ color: 'red' }}>{transcriptError}</p>
             )}
         </div>
     );
