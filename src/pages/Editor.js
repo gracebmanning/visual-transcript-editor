@@ -3,6 +3,7 @@ import AudioWaveform from '../components/AudioWaveform';
 import { useEffect, useState } from 'react';
 
 const Editor = () => {
+	console.log('Editor component rendered');
 	const location = useLocation();
 	const navigate = useNavigate();
 	const audioDataFromUpload = location.state ? location.state.audioData : null;

@@ -11,9 +11,10 @@ const AudioWaveform = (props) => {
     const [waveformData, setWaveformData] = useState([]);
     const [duration, setDuration] = useState(0);
     const [isWaveSurferReady, setIsWaveSurferReady] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState(1); 
 
     useEffect(() => {
-        console.log('First useEffect triggered, fileURL:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady); // Log effect trigger and fileURL
+        console.log('First useEffect triggered, fileURL:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady);
         if (!waveformRef.current) return;
 
         wavesurfer.current = WaveSurfer.create({
@@ -33,36 +34,33 @@ const AudioWaveform = (props) => {
         wavesurfer.current.on('ready', () => {
             console.log('wavesurfer.current in ready event:', wavesurfer.current);
             setDuration(Math.floor(wavesurfer.current.getDuration()));
-        });
 
-        // actions that need to happen after the waveform is visually ready
-        wavesurfer.current.on('waveform-ready', () => {
-            console.log('wavesurfer.current in waveform-ready event:', wavesurfer.current);
-            if (wavesurfer.current) {
-                try {
-                    const rawWaveformData = wavesurfer.current.exportPCM(1024); // Export waveform data
-                    setWaveformData(rawWaveformData);
-                    setIsWaveSurferReady(true);
-                } catch (error) {
-                    console.error("Error exporting PCM in waveform-ready:", error);
-                }
+            // Attempt to get waveform data *after* 'ready'
+            try {
+                const rawWaveformData = wavesurfer.current.exportPeaks(1024);
+                setWaveformData(rawWaveformData);
+                setIsWaveSurferReady(true);
+                console.log('waveformData after export in ready:', rawWaveformData);
+            } catch (error) {
+                console.error("Error exporting Peaks in ready:", error);
             }
         });
 
         return () => {
-            console.log('First useEffect cleanup, isWaveSurferReady:', isWaveSurferReady); // Log cleanup
+            // eslint-disable-next-line no-lone-blocks
+            {/*console.log('First useEffect cleanup, isWaveSurferReady:', isWaveSurferReady);
             if (wavesurfer.current && isWaveSurferReady) {
                 wavesurfer.current.destroy();
             } else if (wavesurfer.current) {
                 wavesurfer.current.stop();
                 wavesurfer.current.un('ready');
             }
-            setIsWaveSurferReady(false);
+            setIsWaveSurferReady(false);*/}
         };
-    }, [props.audioData, isWaveSurferReady]); 
+    }, [props.audioData, isWaveSurferReady]);
 
     useEffect(() => {
-        console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData); // Log second effect trigger
+        console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData);
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -73,28 +71,34 @@ const AudioWaveform = (props) => {
 
         ctx.clearRect(0, 0, width, height);
 
+        // Draw waveform manually
         if (waveformData.length > 0) {
             const middleY = height / 2;
             const samples = waveformData.length;
-            const barWidth = width / samples;
-
+            let barWidth = 2; // Initial bar width
+            
             ctx.strokeStyle = '#69207F';
             ctx.lineWidth = 1;
-            ctx.beginPath();
+
             for (let i = 0; i < samples; i++) {
-                const x = i * barWidth;
-                const amplitude = waveformData[i] * (height / 2);
-                ctx.moveTo(x, middleY - amplitude);
-                ctx.lineTo(x, middleY + amplitude);
+                // Calculate x-coordinate with zoom
+                const x = i * barWidth * zoomLevel;
+
+                // Only draw if the bar is within the visible canvas - PERFORMANCE OPTIMIZATION
+                if (x >= 0 && x < width) {
+                    const amplitude = waveformData[i] * (height / 2);
+                    ctx.beginPath();
+                    ctx.moveTo(x, middleY - amplitude);
+                    ctx.lineTo(x, middleY + amplitude);
+                    ctx.stroke();
+                }
             }
-            ctx.stroke();
         }
 
         // Draw transcript if props.transcriptData is available
         if (props.transcriptData && props.transcriptData.length > 0 && duration > 0) {
-            const transcriptLineY = height - 30; // Position the transcript line near the bottom
+            const transcriptLineY = height - 30;
 
-            // Draw the transcript line
             ctx.strokeStyle = '#333';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -102,13 +106,11 @@ const AudioWaveform = (props) => {
             ctx.lineTo(width, transcriptLineY);
             ctx.stroke();
 
-            // Function to convert time to canvas x-coordinate
             const timeToX = (time) => {
                 return (time / duration) * width;
             };
 
-            // Draw transcript points and labels
-            ctx.fillStyle = '#007bff'; // Point color
+            ctx.fillStyle = '#007bff';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
@@ -117,23 +119,31 @@ const AudioWaveform = (props) => {
                 const x = timeToX(item.start);
                 const pointRadius = 5;
 
-                // Draw a point
                 ctx.beginPath();
                 ctx.arc(x, transcriptLineY, pointRadius, 0, 2 * Math.PI);
                 ctx.fill();
 
-                // Draw the word label
                 ctx.fillStyle = '#333';
                 ctx.fillText(item.word, x, transcriptLineY - 10);
             });
         }
 
-    }, [waveformData, duration, props.transcriptData]);
+    }, [waveformData, duration, props.transcriptData, zoomLevel]); // zoomLevel dependency added
 
     return (
         <div className="waveform-container">
-            <div ref={waveformRef} style={{ marginBottom: '10px' }} />
-            <canvas ref={canvasRef} width={800} height={150} style={{ border: '1px solid #ccc' }} />
+            <div ref={waveformRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }} /> {/*Crucial: waveformRef div*/}
+            <canvas
+                ref={canvasRef}
+                width={800}
+                height={150}
+                style={{ border: '1px solid #ccc' }}
+            />
+            {/* Zoom Controls (Example) */}
+            <div>
+                <button onClick={() => setZoomLevel(zoomLevel * 1.2)}>Zoom In</button>
+                <button onClick={() => setZoomLevel(zoomLevel / 1.2)}>Zoom Out</button>
+            </div>
         </div>
     );
 };

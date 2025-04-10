@@ -275,10 +275,6 @@ footer a:hover{
     flex-flow: column nowrap;
   }
 
-  .waveform-container {
-    max-width: 90vw;
-  }
-
   .all-controls .right-container,
   .all-controls .left-container {
     justify-content: space-evenly;
