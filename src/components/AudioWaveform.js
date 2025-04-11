@@ -137,7 +137,7 @@ const AudioWaveform = (props) => {
                 <canvas
                     ref={canvasRef}
                     className="waveform-canvas"
-                    width={800}
+                    width={900}
                     height={150}
                 />
             </div>

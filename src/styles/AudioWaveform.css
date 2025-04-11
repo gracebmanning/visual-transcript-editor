@@ -1,6 +1,10 @@
 .waveform-container {
     margin: 0 auto;
     max-width: 90vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .canvas-wrapper{
@@ -9,17 +13,17 @@
 }
 
 .waveform-wrapper{
-    width: 100%;
+    width: 900px;
     height: 150px;
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: 1;
 }
 
 .waveform-canvas{
     border: 1px solid #ccc;
     display: block;
     position: relative;
-    z-index: 1;
+    z-index: 0;
 }
