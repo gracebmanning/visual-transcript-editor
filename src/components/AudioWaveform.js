@@ -25,7 +25,7 @@ const AudioWaveform = (props) => {
             progressColor: window.getComputedStyle(document.body).getPropertyValue('--color-medium'),
             cursorColor: 'black',
             barWidth: 2,
-            height: 80,
+            height: 150,
             responsive: true,
             hideScrollbar: true,
             plugins: []
@@ -132,14 +132,13 @@ const AudioWaveform = (props) => {
 
     return (
         <div className="waveform-container">
-            <div ref={waveformRef} className="waveform-wrapper" />
             <div className="canvas-wrapper">
+                <div ref={waveformRef} className="waveform-wrapper" />
                 <canvas
                     ref={canvasRef}
                     className="waveform-canvas"
                     width={800}
                     height={150}
-                    style={{ border: '1px solid #ccc' }}
                 />
             </div>
             <div className="zoom-controls">
