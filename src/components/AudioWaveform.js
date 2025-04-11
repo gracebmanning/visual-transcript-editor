@@ -3,6 +3,7 @@ import WaveSurfer from 'wavesurfer.js';
 
 const AudioWaveform = (props) => {
     console.log('AudioWaveform component rendered');
+    console.log('AudioWaveform props.audioData:', props.audioData);
 
     const waveformRef = useRef(null);
     const wavesurfer = useRef(null);
@@ -14,7 +15,7 @@ const AudioWaveform = (props) => {
     const [zoomLevel, setZoomLevel] = useState(1); 
 
     useEffect(() => {
-        console.log('First useEffect triggered, fileURL:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady);
+        console.log('First useEffect triggered, props.audioData:', props.audioData, 'isWaveSurferReady:', isWaveSurferReady);
         if (!waveformRef.current) return;
 
         wavesurfer.current = WaveSurfer.create({
@@ -34,30 +35,28 @@ const AudioWaveform = (props) => {
         wavesurfer.current.on('ready', () => {
             console.log('wavesurfer.current in ready event:', wavesurfer.current);
             setDuration(Math.floor(wavesurfer.current.getDuration()));
-
-            // Attempt to get waveform data *after* 'ready'
+        
             try {
                 const rawWaveformData = wavesurfer.current.exportPeaks(1024);
                 setWaveformData(rawWaveformData);
                 setIsWaveSurferReady(true);
-                console.log('waveformData after export in ready:', rawWaveformData);
             } catch (error) {
                 console.error("Error exporting Peaks in ready:", error);
             }
         });
 
         return () => {
-            // eslint-disable-next-line no-lone-blocks
-            {/*console.log('First useEffect cleanup, isWaveSurferReady:', isWaveSurferReady);
+            console.log('First useEffect cleanup, isWaveSurferReady:', isWaveSurferReady);
             if (wavesurfer.current && isWaveSurferReady) {
                 wavesurfer.current.destroy();
             } else if (wavesurfer.current) {
                 wavesurfer.current.stop();
                 wavesurfer.current.un('ready');
             }
-            setIsWaveSurferReady(false);*/}
+            setIsWaveSurferReady(false);
         };
-    }, [props.audioData, isWaveSurferReady]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.audioData]);
 
     useEffect(() => {
         console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData);
