@@ -1,0 +1,19 @@
+.waveform-container {
+    margin: 0 auto;
+    max-width: 90vw;
+}
+
+.waveform-wrapper{
+    width: 100%;
+    height: 80px;
+    z-index: 1;
+}
+
+.canvas-wrapper{
+    overflow-x: auto;
+}
+
+.waveform-canvas{
+    border: 1px solid #ccc;
+    display: block;
+}

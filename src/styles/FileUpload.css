@@ -1,0 +1,33 @@
+.file-upload {
+    width: 100%;
+    margin-top: 5vh;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-upload i.audio-icon {
+    font-size: 5em;
+}
+
+button.upload-btn {
+    width: 10em;
+    font-size: 1em;
+    padding: 0.5em;
+    background: var(--color-primary);
+    border-radius: 999px;
+    color: white;
+    border-color: var(--color-primary);
+    cursor: pointer;
+}
+
+button.upload-btn:hover {
+    filter: brightness(1.1);
+}
+
+@media screen and (max-width: 480px) {  
+    .file-upload i.audio-icon {
+      font-size: 4em;
+    }
+}

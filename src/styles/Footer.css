@@ -1,0 +1,15 @@
+footer {
+    font-family: inherit;
+    width: 100%;
+    position: fixed;
+    bottom: 2%;
+    text-align: center;
+}
+  
+footer a{
+    color: var(--color-primary);
+}
+  
+footer a:hover{
+    color: var(--color-dark);
+}

@@ -1,3 +1,4 @@
+import '../styles/AudioWaveform.css';
 import React, { useState, useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
@@ -131,15 +132,17 @@ const AudioWaveform = (props) => {
 
     return (
         <div className="waveform-container">
-            <div ref={waveformRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1 }} /> {/*Crucial: waveformRef div*/}
-            <canvas
-                ref={canvasRef}
-                width={800}
-                height={150}
-                style={{ border: '1px solid #ccc' }}
-            />
-            {/* Zoom Controls (Example) */}
-            <div>
+            <div ref={waveformRef} className="waveform-wrapper" />
+            <div className="canvas-wrapper">
+                <canvas
+                    ref={canvasRef}
+                    className="waveform-canvas"
+                    width={800}
+                    height={150}
+                    style={{ border: '1px solid #ccc' }}
+                />
+            </div>
+            <div className="zoom-controls">
                 <button onClick={() => setZoomLevel(zoomLevel * 1.2)}>Zoom In</button>
                 <button onClick={() => setZoomLevel(zoomLevel / 1.2)}>Zoom Out</button>
             </div>

@@ -1,3 +1,4 @@
+import "../styles/FileUpload.css";
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 
