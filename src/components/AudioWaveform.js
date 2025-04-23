@@ -63,72 +63,74 @@ const AudioWaveform = (props) => {
         console.log('Second useEffect triggered, waveformData length:', waveformData.length, 'duration:', duration, 'transcriptData:', props.transcriptData);
         const canvas = canvasRef.current;
         if (!canvas) return;
-
-        const width = canvas.width;
-        const height = canvas.height;
-        canvasContext.current = canvas.getContext('2d');
-        const ctx = canvasContext.current;
-
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw waveform manually
-        if (waveformData.length > 0) {
-            const middleY = height / 2;
-            const samples = waveformData.length;
-            let barWidth = 2; // Initial bar width
-            
-            ctx.strokeStyle = '#69207F';
-            ctx.lineWidth = 1;
-
-            for (let i = 0; i < samples; i++) {
-                // Calculate x-coordinate with zoom
-                const x = i * barWidth * zoomLevel;
-
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    
+        if (waveformData.length > 0 && duration > 0) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const barWidth = 2; // Adjust as needed
+            const gap = 1; // Adjust as needed
+            const zoom = zoomLevel;
+    
+            // Draw waveform (your existing drawing logic)
+            ctx.beginPath();
+            ctx.strokeStyle = '#4F4A85'; // Waveform color
+            // Use fillRect for drawing bars, as in your previous code
+            waveformData.forEach((value, i) => {
+                const x = i * (barWidth + gap) * zoom;
+                 // You might need to adjust how you scale the amplitude for drawing
+                const amplitude = value * (height / 2); // Example scaling
+                const y = height / 2 - amplitude; // Adjust Y position based on amplitude
+    
                 // Only draw if the bar is within the visible canvas - PERFORMANCE OPTIMIZATION
                 if (x >= 0 && x < width) {
-                    const amplitude = waveformData[i] * (height / 2);
-                    ctx.beginPath();
-                    ctx.moveTo(x, middleY - amplitude);
-                    ctx.lineTo(x, middleY + amplitude);
-                    ctx.stroke();
+                   ctx.fillRect(x, height / 2 - amplitude, barWidth, amplitude * 2); // Draw centered bars
                 }
+            });
+            // ctx.stroke(); // stroke is not needed for fillRect
+    
+            // --- Draw Transcript Line and Points ---
+            if (props.transcriptData && props.transcriptData.length > 0) {
+                const transcriptLineY = height - 30; // Constant Y-position for the transcript line
+    
+                // Draw the horizontal transcript line
+                ctx.beginPath();
+                ctx.strokeStyle = '#333'; // Color of the transcript line
+                ctx.lineWidth = 2; // Thickness of the transcript line
+                ctx.moveTo(0, transcriptLineY);
+                // We need to draw the line potentially wider than the canvas for scrolling
+                const waveformRenderedWidth = waveformData.length * (barWidth + gap) * zoom;
+                ctx.lineTo(waveformRenderedWidth, transcriptLineY);
+                ctx.stroke();
+    
+                // Draw points for each transcript item
+                ctx.fillStyle = '#007bff'; // Color of the transcript points
+                const pointRadius = 5; // Radius of the points
+    
+                props.transcriptData.forEach((item) => {
+                     // Calculate the X-coordinate based on the timestamp
+                    const x = (item.start / duration) * waveformRenderedWidth; // Position based on time and total rendered width
+    
+                    // Only draw if the point is within the potentially scrollable area
+                    if (x >= 0 && x <= waveformRenderedWidth) {
+                         ctx.beginPath();
+                         ctx.arc(x, transcriptLineY, pointRadius, 0, 2 * Math.PI);
+                         ctx.fill();
+    
+                         // Optional: Draw text label for each point (e.g., the word)
+                         // You'll need to adjust text positioning and potentially add logic
+                         // to avoid overlapping labels at high zoom levels.
+                         // ctx.fillStyle = '#333';
+                         // ctx.font = '12px Arial';
+                         // ctx.textAlign = 'center';
+                         // ctx.textBaseline = 'bottom';
+                         // ctx.fillText(item.word, x, transcriptLineY - 10);
+                    }
+                });
             }
         }
-
-        // Draw transcript if props.transcriptData is available
-        if (props.transcriptData && props.transcriptData.length > 0 && duration > 0) {
-            const transcriptLineY = height - 30;
-
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, transcriptLineY);
-            ctx.lineTo(width, transcriptLineY);
-            ctx.stroke();
-
-            const timeToX = (time) => {
-                return (time / duration) * width;
-            };
-
-            ctx.fillStyle = '#007bff';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'bottom';
-
-            props.transcriptData.forEach((item) => {
-                const x = timeToX(item.start);
-                const pointRadius = 5;
-
-                ctx.beginPath();
-                ctx.arc(x, transcriptLineY, pointRadius, 0, 2 * Math.PI);
-                ctx.fill();
-
-                ctx.fillStyle = '#333';
-                ctx.fillText(item.word, x, transcriptLineY - 10);
-            });
-        }
-
-    }, [waveformData, duration, props.transcriptData, zoomLevel]); // zoomLevel dependency added
+    }, [waveformData, duration, props.transcriptData, zoomLevel]); // Dependencies remain the same
 
     return (
         <div className="waveform-container">
